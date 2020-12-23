@@ -9,6 +9,9 @@ const mpdServerHost = process.env.MPD_HOST || 'localhost';
 const mpdServerPort = process.env.MPD_PORT || 6600;
 const mediaPath = process.env.MPD_PATH || '/mnt/robin/Music'
 
+const imageWidth = 900;
+const imageHeight = 200
+
 const cmd = mpd.cmd
 
 const client = mpd.connect({
@@ -124,10 +127,17 @@ const drawRoundRect = (ctx: CanvasRenderingContext2D, x: number, y: number, w: n
     ctx.closePath();
 }
 
+const formatTime = (time: number) => {
+    const mins = Math.floor(time / 60);
+    const seconds = Math.floor(time - (mins * 60));
+
+    return `${mins}:${seconds}`;
+}
+
 const server = restify.createServer();
 
 server.get('/',  async (req, res, next) => {
-    const canvas = createCanvas(900, 200);
+    const canvas = createCanvas(imageWidth, imageHeight);
     const ctx = canvas.getContext('2d')
 
     const currentSong = await getCurrentSong();
@@ -139,7 +149,7 @@ server.get('/',  async (req, res, next) => {
 
 
     ctx.fillStyle = '#FFFFFF';
-    drawRoundRect(ctx, 10, 10, 880, 180, 10);
+    drawRoundRect(ctx, 0, 0, imageWidth, imageHeight, 10);
     ctx.fill();
     ctx.clip();
 
@@ -147,10 +157,10 @@ server.get('/',  async (req, res, next) => {
     try {
         const imageData = await getCoverImage(mediaPath + '/' + currentSong.file);
         const image = await loadImage(imageData);
-        ctx.drawImage(image, 10, 10, 180, 180);
+        ctx.drawImage(image, 0, 0, imageHeight, imageHeight);
     } catch (e) {
         ctx.beginPath();
-        ctx.rect(10, 10, 180, 180);
+        ctx.rect(0, 0, imageHeight, imageHeight);
         ctx.closePath();
         ctx.fillStyle = '#000000';
         ctx.fill();
@@ -158,18 +168,22 @@ server.get('/',  async (req, res, next) => {
 
     ctx.fillStyle = '#585858';
     ctx.font = '20px Roboto'
-    ctx.fillText('Whats playing on my MPD server?', 200, 40)
+    ctx.fillText('Whats playing on my MPD server?', imageHeight + 10, 30)
 
     ctx.fillStyle = '#222222';
     ctx.font = '40px Roboto'
-    ctx.fillText(currentSong.Title || 'Unknown title', 200, 90)
+    ctx.fillText(currentSong.Title || 'Unknown title', imageHeight + 10, 80)
     ctx.font = '20px Roboto'
-    ctx.fillText('By ' + (currentSong.Artist || 'Unknown artist'), 200, 120)
+    ctx.fillText('By ' + (currentSong.Artist || 'Unknown artist'), imageHeight + 10, 110)
+
+    ctx.fillStyle = '#585858';
+    ctx.font = '14px Roboto'
+    ctx.fillText(formatTime(currentStatus.elapsed) + '/' + formatTime(currentStatus.duration), imageHeight + 10, imageHeight - 27)
 
     // Draw progress bar
     ctx.beginPath();
-    ctx.moveTo(200,160);
-    ctx.lineTo(200 + (progress * 680), 160);
+    ctx.moveTo(imageHeight + 10, imageHeight - 20);
+    ctx.lineTo(imageHeight + 10 + (progress * (imageWidth - (imageHeight + 20))), imageHeight - 20);
     ctx.closePath();
     ctx.lineWidth = 5;
     ctx.stroke();
