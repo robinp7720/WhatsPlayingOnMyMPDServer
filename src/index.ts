@@ -7,7 +7,7 @@ import mpd from 'mpd';
 
 const mpdServerHost = process.env.MPD_HOST || 'localhost';
 const mpdServerPort = process.env.MPD_PORT || 6600;
-const mediaPath = '/mnt/robin/Music'
+const mediaPath = process.env.MPD_PATH || '/mnt/robin/Music'
 
 const cmd = mpd.cmd
 
