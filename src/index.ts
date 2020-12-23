@@ -108,7 +108,8 @@ const getCoverImage: (path: string) => Promise<Buffer> = (path) => {
                 if (!data.tags.picture.data) return reject(new Error());
 
                 resolve(Buffer.from(data.tags.picture.data));
-            }
+            },
+            onError: error => reject(error)
         })
     });
 }
@@ -132,10 +133,10 @@ server.get('/',  async (req, res, next) => {
     const currentSong = await getCurrentSong();
     const currentStatus = await getCurrentStatus();
 
+    console.log(currentSong);
+
     const progress = currentStatus.elapsed/currentStatus.duration;
 
-    const imageData = await getCoverImage(mediaPath + '/' + currentSong.file);
-    const image = await loadImage(imageData);
 
     ctx.fillStyle = '#FFFFFF';
     drawRoundRect(ctx, 10, 10, 880, 180, 10);
@@ -143,8 +144,17 @@ server.get('/',  async (req, res, next) => {
     ctx.clip();
 
 
-
-    ctx.drawImage(image, 10, 10, 180, 180);
+    try {
+        const imageData = await getCoverImage(mediaPath + '/' + currentSong.file);
+        const image = await loadImage(imageData);
+        ctx.drawImage(image, 10, 10, 180, 180);
+    } catch (e) {
+        ctx.beginPath();
+        ctx.rect(10, 10, 180, 180);
+        ctx.closePath();
+        ctx.fillStyle = '#000000';
+        ctx.fill();
+    }
 
     ctx.fillStyle = '#585858';
     ctx.font = '20px Roboto'
@@ -152,9 +162,9 @@ server.get('/',  async (req, res, next) => {
 
     ctx.fillStyle = '#222222';
     ctx.font = '40px Roboto'
-    ctx.fillText(currentSong.Title, 200, 90)
+    ctx.fillText(currentSong.Title || 'Unknown title', 200, 90)
     ctx.font = '20px Roboto'
-    ctx.fillText('By ' + currentSong.Artist, 200, 120)
+    ctx.fillText('By ' + (currentSong.Artist || 'Unknown artist'), 200, 120)
 
     // Draw progress bar
     ctx.beginPath();
