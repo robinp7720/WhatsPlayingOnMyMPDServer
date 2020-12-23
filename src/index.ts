@@ -165,7 +165,7 @@ server.get('/',  async (req, res, next) => {
     ctx.stroke();
 
     res.header('content-type', 'image/png');
-    res.header('Cache-Control', 'max-age=500')
+    res.header('Cache-Control', 'max-age=30')
     canvas.createPNGStream().pipe(res);
 })
 
