@@ -71,7 +71,7 @@ const getCoverImage: (path: string) => Promise<Buffer> = (path) => {
 const server = restify.createServer();
 
 server.get('/',  async (req, res, next) => {
-    const canvas = createCanvas(700, 200);
+    const canvas = createCanvas(900, 200);
     const ctx = canvas.getContext('2d');
 
     const currentSong = await getCurrentSong();
@@ -88,6 +88,8 @@ server.get('/',  async (req, res, next) => {
     ctx.font = '20px Roboto'
     ctx.fillText('By ' + currentSong.Artist, 200, 110)
 
+    res.header('content-type', 'image/png');
+    res.header('Cache-Control', 'max-age=500')
     canvas.createPNGStream().pipe(res);
 })
 
