@@ -7,3 +7,4 @@ To run this yourself, simply set the ```MPD_HOST```, ```MPD_PORT``` and ```MPD_P
 ## Demo
 Here's what's playing on my MPD server:
 <img src="https://robindecker.me/mpd/">
+<img src="https://robindecker.me/mpd/svg">
