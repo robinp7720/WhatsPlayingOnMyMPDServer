@@ -131,7 +131,7 @@ const drawRoundRect = (ctx: CanvasRenderingContext2D, x: number, y: number, w: n
 
 const formatTime = (time: number) => {
     const mins = Math.floor(time / 60);
-    const seconds = Math.floor(time - (mins * 60));
+    const seconds = Math.floor(time - (mins * 60)).toString().padStart(2,'0');
 
     return `${mins}:${seconds}`;
 }
