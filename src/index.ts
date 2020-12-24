@@ -2,6 +2,8 @@ import {CanvasRenderingContext2D, createCanvas, loadImage} from 'canvas';
 import restify from 'restify';
 import jsmediatags from 'jsmediatags'
 
+import {promises as fs} from 'fs';
+
 // @ts-ignore
 import mpd from 'mpd';
 
@@ -189,8 +191,28 @@ server.get('/',  async (req, res, next) => {
     ctx.stroke();
 
     res.header('content-type', 'image/png');
-    res.header('Cache-Control', 'max-age=30')
+    res.header('Cache-Control', 'max-age=30');
     canvas.createPNGStream().pipe(res);
 })
+
+server.get('/svg', async (req, res, next) => {
+    const currentSong = await getCurrentSong();
+    const currentStatus = await getCurrentStatus();
+
+    const imageData = await getCoverImage(mediaPath + '/' + currentSong.file);
+    const base64Image = imageData.toString('base64');
+
+    res.header('content-type', 'image/svg+xml; charset=utf-8');
+    res.header('Cache-Control', 'max-age=30');
+    
+    const template = await fs.readFile(__dirname + '/../src/svg-templates/default.svg', 'utf-8');
+
+    let compiled = template
+        .replace(new RegExp('%ARTIST%', 'g'), currentSong.Artist)
+        .replace(new RegExp('%TITLE%', 'g'), currentSong.Title)
+        .replace(new RegExp('%IMAGE%', 'g'), 'data:image/png;base64,' + base64Image);
+
+    res.sendRaw(compiled);
+});
 
 server.listen(8080);
